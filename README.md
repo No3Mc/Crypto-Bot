@@ -15,3 +15,4 @@ TO DO:
 - [ ] Apply Dollar-Cost Averaging (DCA) strategies.
 - [ ] Implement hedging techniques.
 - [ ] Detect and mitigate fake trading volumes.
+- [ ] Integrate with a broker API. 
