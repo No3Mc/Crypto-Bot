@@ -5,7 +5,7 @@ from keras.layers import Dense, LSTM, Bidirectional
 import binance
 
 # Set the Binance API endpoint for ETHUSDT
-url = 'https://api.binance.com/api/v3/klines?symbol=ETHUSDT&interval=1d&start=2023-08-04&end=2023-10-02'
+url = 'URL_FOR_APIs'
 
 # Set your Binance API key
 client = binance.Client(api_key='API_Key', api_secret='Secret_Key')
