@@ -5,7 +5,7 @@ from keras.layers import Dense, LSTM, Bidirectional
 import binance
 
 # Set the Binance API endpoint for ETHUSDT
-url = 'URL_FOR_APIs'
+url = 'url_for_APIs_with_latest_version'
 
 # Set your Binance API key
 client = binance.Client(api_key='API_Key', api_secret='Secret_Key')
