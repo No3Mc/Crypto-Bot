@@ -28,3 +28,16 @@ train_size = int(0.8 * len(X))
 X_train, X_val = X[:train_size], X[train_size:]
 y_train, y_val = y[:train_size], y[train_size:]
 
+# Reshaping data for LSTM
+X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
+X_val = np.reshape(X_val, (X_val.shape[0], X_val.shape[1], 1))
+
+# Building LSTM model
+model = Sequential()
+model.add(LSTM(units=50, return_sequences=True, input_shape=(X_train.shape[1], 1)))
+model.add(LSTM(units=50))
+model.add(Dense(units=1))
+
+model.compile(optimizer='adam', loss='mean_squared_error')
+model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_val, y_val))
+
