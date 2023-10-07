@@ -41,3 +41,10 @@ model.add(Dense(units=1))
 model.compile(optimizer='adam', loss='mean_squared_error')
 model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_val, y_val))
 
+# Function to predict the next day price
+def predict_next_day_price(model, last_n_days_data):
+    last_n_days_normalized = scaler.transform(last_n_days_data.reshape(-1, 1))
+    last_n_days_normalized = np.reshape(last_n_days_normalized, (1, last_n_days_normalized.shape[0], 1))
+    predicted_price = model.predict(last_n_days_normalized)
+    return scaler.inverse_transform(predicted_price)
+
