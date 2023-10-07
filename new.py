@@ -23,3 +23,8 @@ for i in range(60, len(normalized_data) - 1):  # using last 60 days to predict n
     y.append(normalized_data[i, 0])
 X, y = np.array(X), np.array(y)
 
+# Split data into training and validation sets
+train_size = int(0.8 * len(X))
+X_train, X_val = X[:train_size], X[train_size:]
+y_train, y_val = y[:train_size], y[train_size:]
+
