@@ -48,3 +48,7 @@ def predict_next_day_price(model, last_n_days_data):
     predicted_price = model.predict(last_n_days_normalized)
     return scaler.inverse_transform(predicted_price)
 
+# Asking user for a specific date
+date_str = input("Enter the date for which you want to predict the price (YYYY-MM-DD): ")
+date_obj = pd.to_datetime(date_str)
+
