@@ -52,3 +52,11 @@ def predict_next_day_price(model, last_n_days_data):
 date_str = input("Enter the date for which you want to predict the price (YYYY-MM-DD): ")
 date_obj = pd.to_datetime(date_str)
 
+# Checking if the date is within the dataset range
+if date_obj <= data['Date'].max():
+    actual_price = data[data['Date'] == date_obj]['Close'].values[0]
+    print(f"The date you entered is a past date. The actual price for {date_str} was: ${actual_price:.2f}")
+else:
+    last_n_days_data = data['Close'].values[-60:]
+    predicted_price = predict_next_day_price(model, last_n_days_data)
+    print(f"Predicted price for {date_str}: ${predicted_price[0][0]:.2f}")
