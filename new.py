@@ -12,3 +12,7 @@ data['Date'] = pd.to_datetime(data['Date'])
 # Used 'Close' prices for prediction
 closing_prices = data['Close'].values.reshape(-1, 1)
 
+# Normalize data
+scaler = MinMaxScaler()
+normalized_data = scaler.fit_transform(closing_prices)
+
