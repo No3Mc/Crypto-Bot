@@ -1,57 +1,61 @@
 import pandas as pd
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_absolute_error
 
-# Load data
-csv_file = "Updated-Ethereum History(2019-2023).csv"
+# Load data from the CSV file
+csv_file = "ETH-USD.csv"  # Replace with the path to your Ethereum data CSV file
 data = pd.read_csv(csv_file)
 
 # Preprocess the data: Set "Date" as the index and ensure it's in datetime format
-data['Date'] = pd.to_datetime(data['Date'], format="%m/%d/%Y")
+data['Date'] = pd.to_datetime(data['Date'])
 data.set_index('Date', inplace=True)
 
-# Ensure the datetime index is sorted in ascending order (if not already)
-data.sort_index(inplace=True)
-
 # Define features (X) and target variable (y)
-X = data[["High", "Low", "Open"]]  # Features (excluding "Close" as it's the target variable)
-y = data["Close"]  # Target variable
+X = data[["High", "Low", "Close", "Adj Close", "Volume"]]  # Features
+y = data["Open"]  # Target variable
 
-# Allow the user to input a specific future date
-input_date = input("Enter a future date (m/d/yyyy): ")
-try:
-    input_date = pd.to_datetime(input_date, format="%m/%d/%Y")
-except ValueError:
-    print("Invalid date format. Please use the format 'm/d/yyyy'.")
-    exit()
+# Initialize and train the linear regression model on the entire dataset
+regr = LinearRegression()
+regr.fit(X, y)
 
-# Check if the specified date is within the range of available dates
-if input_date < data.index.min() or input_date > data.index.max():
-    print("Invalid date. Please enter a date within the range of available data.")
-else:
-    # Initialize and train the linear regression model on the entire dataset
-    regr = LinearRegression()
-    regr.fit(X, y)
+# Define a range of future dates for prediction
+future_dates = pd.date_range(start="2023-10-07", end="2023-10-11")  # Example date range
 
-    # Initialize a list for predicted close prices
-    predicted_close_prices = []
+# Make predictions for each future date, adjusting the price based on the previous prediction
+predicted_open_prices = []
 
-    # Create a feature vector for prediction
-    input_features = X.loc[input_date][["High", "Low", "Open"]].values.reshape(1, -1)
+previous_prediction = None  # Initialize previous prediction to None
 
-    # Use the trained model to predict the Ethereum close price for the specified future date
-    predicted_close_price = regr.predict(input_features)[0]
-    predicted_close_prices.append(predicted_close_price)
+for input_date in future_dates:
+    try:
+        # Create a feature vector for prediction
+        input_features = X.loc[input_date].values.reshape(1, -1)
 
-    # Create a DataFrame to store the predicted close price with the user-specified date
-    predicted_data = pd.DataFrame({
-        "Date": [input_date],
-        "Predicted_Close": predicted_close_prices
-    })
+        # Use the trained model to predict the Ethereum open price for the specified future date
+        predicted_open_price = regr.predict(input_features)[0]
 
-    # Display the predicted close price
-    print(predicted_data)
+        # Adjust the predicted price based on the previous prediction and actual open price
+        if previous_prediction is not None:
+            actual_open_price = y.loc[input_date]
+            adjustment = actual_open_price - previous_prediction
+            predicted_open_price += adjustment
 
-    # You can further evaluate the model's performance if needed
-    # (e.g., calculate MAE on the entire dataset), but it's not necessary for this specific prediction.
+        predicted_open_prices.append(predicted_open_price)
+        previous_prediction = predicted_open_price
+    except KeyError:
+        # Handle the case where the date doesn't exist in the index
+        print(f"Warning: Data for date {input_date} not found. Using the previous date's prediction.")
+        if predicted_open_prices:
+            # Use the last available prediction as an estimate
+            predicted_open_prices.append(predicted_open_prices[-1])
+        else:
+            print("Error: No previous predictions available.")
+            break
 
+# Create a DataFrame to store the predicted open prices with corresponding dates
+predicted_data = pd.DataFrame({
+    "Date": future_dates,
+    "Predicted_Open": predicted_open_prices
+})
+
+# Display the predicted open prices
+print(predicted_data)
