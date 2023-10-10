@@ -1,4 +1,5 @@
 import pandas as pd
+
 import numpy as np
 import tensorflow as tf
 from sklearn.preprocessing import MinMaxScaler
@@ -77,3 +78,4 @@ print(predicted_open_prices)
 # Calculate and display the Mean Squared Error (MSE)
 mse = mean_squared_error(y_test, predicted_open_prices)
 print("Mean Squared Error:", mse)
+
