@@ -1,3 +1,4 @@
+# Importing libraries
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
@@ -9,7 +10,7 @@ csv_file = "Ethereum History(2019-2023).csv"
 data = pd.read_csv(csv_file)
 data['Date'] = pd.to_datetime(data['Date'])
 
-# Used 'Close' prices for prediction
+# Extracting 'Close' prices for prediction
 closing_prices = data['Close'].values.reshape(-1, 1)
 
 # Normalize data
@@ -18,7 +19,7 @@ normalized_data = scaler.fit_transform(closing_prices)
 
 # Convert time series to supervised learning problem
 X, y = [], []
-for i in range(60, len(normalized_data) - 1):  # using last 60 days to predict next day
+for i in range(60, len(normalized_data) - 1):  # using last 60 days to predict the next day
     X.append(normalized_data[i-60:i, 0])
     y.append(normalized_data[i, 0])
 X, y = np.array(X), np.array(y)
@@ -41,12 +42,21 @@ model.add(Dense(units=1))
 model.compile(optimizer='adam', loss='mean_squared_error')
 model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_val, y_val))
 
-# Function to predict the next day price
 def predict_next_day_price(model, last_n_days_data):
+    """
+    Predicts the next day price using the LSTM model.
+
+    Args:
+        model (Sequential): Trained LSTM model.
+        last_n_days_data (array-like): Last n days' closing prices for prediction.
+
+    Returns:
+        float: Predicted price for the next day.
+    """
     last_n_days_normalized = scaler.transform(last_n_days_data.reshape(-1, 1))
     last_n_days_normalized = np.reshape(last_n_days_normalized, (1, last_n_days_normalized.shape[0], 1))
     predicted_price = model.predict(last_n_days_normalized)
-    return scaler.inverse_transform(predicted_price)
+    return scaler.inverse_transform(predicted_price)[0][0]
 
 # Asking user for a specific date
 date_str = input("Enter the date for which you want to predict the price (YYYY-MM-DD): ")
@@ -59,4 +69,4 @@ if date_obj <= data['Date'].max():
 else:
     last_n_days_data = data['Close'].values[-60:]
     predicted_price = predict_next_day_price(model, last_n_days_data)
-    print(f"Predicted price for {date_str}: ${predicted_price[0][0]:.2f}")
+    print(f"Predicted price for {date_str}: ${predicted_price:.2f}")
