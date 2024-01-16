@@ -10,7 +10,7 @@ from tensorflow.keras.layers import LSTM, Dense
 import matplotlib.pyplot as plt
 
 # Load the dataset
-df = pd.read_csv('ethereum_prices.csv')
+df = pd.read_csv('ETH-USD.csv')
 df['Date'] = pd.to_datetime(df['Date'])
 df.set_index('Date', inplace=True)
 
