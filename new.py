@@ -1,72 +1,85 @@
-# Importing libraries
-import numpy as np
+# Import necessary libraries
 import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import mean_squared_error
+from statsmodels.tsa.arima.model import ARIMA
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense
+import matplotlib.pyplot as plt
 
-# Load and preprocess data
-csv_file = "Ethereum History(2019-2023).csv"
-data = pd.read_csv(csv_file)
-data['Date'] = pd.to_datetime(data['Date'])
+# Load the dataset
+df = pd.read_csv('ETH-USD.csv')
+df['Date'] = pd.to_datetime(df['Date'])
+df.set_index('Date', inplace=True)
 
-# Extracting 'Close' prices for prediction
-closing_prices = data['Close'].values.reshape(-1, 1)
+# Visualize the data
+plt.figure(figsize=(12, 6))
+plt.plot(df.index, df['Price'], label='Ethereum Price')
+plt.title('Ethereum Price Over Time')
+plt.xlabel('Date')
+plt.ylabel('Price (USD)')
+plt.legend()
+plt.show()
 
-# Normalize data
+# Split the data into training and testing sets
+train_size = int(len(df) * 0.8)
+train, test = df[:train_size], df[train_size:]
+
+# Normalize the data using MinMaxScaler
 scaler = MinMaxScaler()
-normalized_data = scaler.fit_transform(closing_prices)
+train_scaled = scaler.fit_transform(train)
+test_scaled = scaler.transform(test)
 
-# Convert time series to supervised learning problem
-X, y = [], []
-for i in range(60, len(normalized_data) - 1):  # using last 60 days to predict the next day
-    X.append(normalized_data[i-60:i, 0])
-    y.append(normalized_data[i, 0])
-X, y = np.array(X), np.array(y)
+# Function to calculate Mean Absolute Percentage Error (MAPE)
+def calculate_mape(y_true, y_pred):
+    return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
 
-# Split data into training and validation sets
-train_size = int(0.8 * len(X))
-X_train, X_val = X[:train_size], X[train_size:]
-y_train, y_val = y[:train_size], y[train_size:]
+# ARIMA model
+model_arima = ARIMA(train, order=(5,1,0))
+fit_arima = model_arima.fit()
 
-# Reshaping data for LSTM
-X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
-X_val = np.reshape(X_val, (X_val.shape[0], X_val.shape[1], 1))
+# Make predictions on the test set
+predictions_arima = fit_arima.predict(start=len(train), end=len(train) + len(test) - 1, typ='levels')
 
-# Building LSTM model
-model = Sequential()
-model.add(LSTM(units=50, return_sequences=True, input_shape=(X_train.shape[1], 1)))
-model.add(LSTM(units=50))
-model.add(Dense(units=1))
+# Evaluate ARIMA model
+mse_arima = mean_squared_error(test, predictions_arima)
+mape_arima = calculate_mape(test, predictions_arima)
+print(f'ARIMA Model - Mean Squared Error: {mse_arima}, MAPE: {mape_arima}%')
 
-model.compile(optimizer='adam', loss='mean_squared_error')
-model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_val, y_val))
+# LSTM model
+def create_lstm_model():
+    model = Sequential()
+    model.add(LSTM(units=50, activation='relu', input_shape=(1, 1)))
+    model.add(Dense(units=1))
+    model.compile(optimizer='adam', loss='mse')
+    return model
 
-def predict_next_day_price(model, last_n_days_data):
-    """
-    Predicts the next day price using the LSTM model.
+# Reshape data for LSTM
+X_train = np.reshape(train_scaled, (train_scaled.shape[0], 1, 1))
+X_test = np.reshape(test_scaled, (test_scaled.shape[0], 1, 1))
 
-    Args:
-        model (Sequential): Trained LSTM model.
-        last_n_days_data (array-like): Last n days' closing prices for prediction.
+# Create and train the LSTM model
+model_lstm = create_lstm_model()
+model_lstm.fit(X_train, train_scaled, epochs=50, batch_size=1, verbose=2)
 
-    Returns:
-        float: Predicted price for the next day.
-    """
-    last_n_days_normalized = scaler.transform(last_n_days_data.reshape(-1, 1))
-    last_n_days_normalized = np.reshape(last_n_days_normalized, (1, last_n_days_normalized.shape[0], 1))
-    predicted_price = model.predict(last_n_days_normalized)
-    return scaler.inverse_transform(predicted_price)[0][0]
+# Make predictions on the test set
+predictions_lstm_scaled = model_lstm.predict(X_test)
+predictions_lstm = scaler.inverse_transform(predictions_lstm_scaled)
 
-# Asking user for a specific date
-date_str = input("Enter the date for which you want to predict the price (YYYY-MM-DD): ")
-date_obj = pd.to_datetime(date_str)
+# Evaluate LSTM model
+mse_lstm = mean_squared_error(test, predictions_lstm)
+mape_lstm = calculate_mape(test, predictions_lstm)
+print(f'LSTM Model - Mean Squared Error: {mse_lstm}, MAPE: {mape_lstm}%')
 
-# Checking if the date is within the dataset range
-if date_obj <= data['Date'].max():
-    actual_price = data[data['Date'] == date_obj]['Close'].values[0]
-    print(f"The date you entered is a past date. The actual price for {date_str} was: ${actual_price:.2f}")
-else:
-    last_n_days_data = data['Close'].values[-60:]
-    predicted_price = predict_next_day_price(model, last_n_days_data)
-    print(f"Predicted price for {date_str}: ${predicted_price:.2f}")
+# Visualize the results
+plt.figure(figsize=(12, 6))
+plt.plot(test.index, test['Price'], label='Actual Prices')
+plt.plot(test.index, predictions_arima, label='ARIMA Predictions')
+plt.plot(test.index, predictions_lstm, label='LSTM Predictions')
+plt.title('Ethereum Price Prediction')
+plt.xlabel('Date')
+plt.ylabel('Price (USD)')
+plt.legend()
+plt.show()
