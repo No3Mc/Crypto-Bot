@@ -28,6 +28,6 @@ TO DO:
 
 
 
+![Screenshot 2024-02-22 221641](https://github.com/No3Mc/Crypto-Bot/assets/121315598/37693da3-6df2-416f-a2b8-18e971c0c1a0)
 
-  ![Screenshot 2024-02-21 232118](https://github.com/No3Mc/Crypto-Bot/assets/121315598/e6c3e5ff-37be-4962-80fc-bd83081e34f9)
 
