@@ -17,7 +17,7 @@ TO DO:
 - [ ] Detect and mitigate fake trading volumes.
 - [ ] Integrate with a broker API. 
 
-- First Draft:
+- Third Draft:
 
 
 
@@ -28,7 +28,7 @@ TO DO:
 
 
 
-![Screenshot 2024-03-11 232653](https://github.com/No3Mc/Crypto-Bot/assets/121315598/89733812-033d-4eab-b88b-6dd696fb6a5e)
+![Screenshot 2024-03-15 223235](https://github.com/No3Mc/Crypto-Bot/assets/121315598/43512c5b-0416-4477-9d37-1addc8e9b29f)
 
 
 
