@@ -1,7 +1,3 @@
-Starter:
-
-- [ ] Predict Price after reading the chart
-
 
 TO DO:
 
@@ -17,7 +13,7 @@ TO DO:
 - [ ] Detect and mitigate fake trading volumes.
 - [ ] Integrate with a broker API. 
 
-- Third Draft:
+- Fourth Draft:
 
 
 
@@ -28,7 +24,7 @@ TO DO:
 
 
 
-![Screenshot 2024-03-15 223235](https://github.com/No3Mc/Crypto-Bot/assets/121315598/43512c5b-0416-4477-9d37-1addc8e9b29f)
+![Screenshot 2024-03-19 222303](https://github.com/No3Mc/Crypto-Bot/assets/121315598/cb446f3c-cbb0-4083-a1f7-738b12812a42)
 
 
 
